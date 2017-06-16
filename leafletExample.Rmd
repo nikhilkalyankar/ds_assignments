@@ -1,0 +1,58 @@
+---
+title: "Leaflet Assignment: Restaurants in New York"
+author: "Nikhil"
+date: "June 16, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Leaflet
+```{r,cache=TRUE}
+# Extract data as csv
+all_liquor <- read.csv("https://data.ny.gov/api/views/hrvs-fxs2/rows.csv?accessType=DOWNLOAD")
+
+```
+
+#All of the coolest restaurants serving liquor
+
+```{r,warning=FALSE,message=FALSE}
+library(leaflet)
+library(dplyr)
+# Create my_map using leaflet and csv data
+# Filter data with category "License.Type.Name" using the term "ON-PREMISES LIQUOR"
+restaurants_serving_liquor <- all_liquor[grep("ON-PREMISES LIQUOR",all_liquor[,2]),]
+# Filter some restaurants showing up in the middle of the Atlantic Ocean
+restaurants_serving_liquor <- restaurants_serving_liquor[which(restaurants_serving_liquor[,19] > 39 & restaurants_serving_liquor[,20] > -76),]
+#Add column "Name" that uses both "Premises.Name" and "Doing.Business.As..DBA."
+restaurants_serving_liquor <- mutate(restaurants_serving_liquor, Name=paste(sep = "<br/>", trimws(paste("<b>",Doing.Business.As..DBA., "#", Premises.Name, "</b>")) , Actual.Address.of.Premises..Address1., paste(City, State, Zip)))
+
+# Build map with leaflet
+my_resmap <- leaflet(restaurants_serving_liquor) %>% addTiles() %>%
+  addMarkers(lng = ~Longitude, lat = ~Latitude,popup = ~Name,clusterOptions = markerClusterOptions()) 
+
+#Display map
+my_resmap
+
+```
+
+# My Goto Restaurants
+
+```{r}
+library(leaflet)
+# Create my_map using leaflet and csv data
+
+restaurants <- restaurants_serving_liquor[which(restaurants_serving_liquor[,19] > 40.7037 & restaurants_serving_liquor[,19] < 40.711 & restaurants_serving_liquor[,20] > -74.010 & restaurants_serving_liquor[,20] < -73.9995),]
+
+my_map <- leaflet(restaurants) %>% addTiles() %>%
+  addMarkers(lng = ~Longitude, lat = ~Latitude, popup = ~Name
+  )
+
+# Display map with leaflet
+my_map
+
+```
+
+

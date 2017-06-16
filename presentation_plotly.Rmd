@@ -1,0 +1,187 @@
+---
+title: "Presentation and Plotly - Week 3 Assignment"
+author: "Nikhil"
+date: "June 16, 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+##USEPA Environmental Quality Index (EQI)
+
+
+- *Data Source*: https://catalog.data.gov/dataset/usepa-environmental-quality-index-eqi-air-water-land-built-and-sociodemographic-domains-transf
+
+- *Metadata*: https://catalog.data.gov/harvest/object/c668b067-46a2-4a12-a541-c8c960d75f65/html/original
+
+The following slides show:
+
+
+- Distribution of air, water and metal pollutants by state
+- Interrelation between air, water and metal pollutants by state with color coded categories
+
+***
+```{r,cache=TRUE}
+
+#Metadata: 
+eqidata <- read.csv("https://edg.epa.gov/data/Public/ORD/NHEERL/EQI/Eqidata_all_domains_2014March11.csv")
+
+```
+
+```{r,warning=FALSE,message=FALSE}
+library(plotly)
+library(dplyr)
+summarized_data <- eqidata %>% tbl_df() %>%
+mutate(
+air_data = rowSums(eqidata[, 6:92]),
+water_data = rowSums(eqidata[, 105:165]),
+metal_data = rowSums(eqidata[, 175:187])
+) %>%
+group_by(state_name, cat_rucc) %>%
+summarize(
+air_data = sum(air_data),
+water_data = sum(water_data),
+metal_data = sum(metal_data),
+numdays_rain_activity_tot = sum(numdays_rain_activity_tot),
+county_pop_2000 = sum(county_pop_2000)
+)
+
+```
+
+
+## Plotly Graph - Population vs Air Pollutants Data 
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ county_pop_2000,
+  y =  ~ air_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(xaxis = list(title = "Population"),
+  yaxis = list(title = "Air Pollutants"))
+```
+
+## Plotly Graph - Population vs Water Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ county_pop_2000,
+  y =  ~ water_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(xaxis = list(title = "Population"),
+  yaxis = list(title = "Water Pollutants"))
+
+```
+
+## Plotly Graph - Population vs Metal Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ county_pop_2000,
+  y =  ~ metal_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(xaxis = list(title = "Population"),
+  yaxis = list(title = "Metal Pollutants"))
+
+```
+
+
+## Plotly Graph - Water Pollutants vs Air Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ water_data,
+  y =  ~ air_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(
+  xaxis = list(title = "Water Pollutants"),
+  yaxis = list(title = "Air Pollutants")
+  )
+```
+
+## Plotly Graph - Water Pollutants vs Metal Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ water_data,
+  y =  ~ metal_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(
+  xaxis = list(title = "Water Pollutants"),
+  yaxis = list(title = "Metal Pollutants")
+  )
+```
+
+## Plotly Graph - Metal Pollutants vs Air Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ metal_data,
+  y =  ~ air_data,
+  type = "scatter",
+  mode = "markers",
+  color = ~ cat_rucc
+  ) %>% layout(
+  xaxis = list(title = "Metal Pollutants"),
+  yaxis = list(title = "Air Pollutants")
+  )
+```
+
+
+## Plotly Graph - State vs Number of Rain Activity Days
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ state_name,
+  y =  ~ numdays_rain_activity_tot,
+  type = "bar"
+  ) %>% layout(
+  xaxis = list(title = "US States"),
+  yaxis = list(title = "Number of days of Rain Activity")
+  )
+```
+
+## Plotly Graph - State vs Population
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ state_name,
+  y =  ~ county_pop_2000,
+  type = "bar"
+  ) %>% layout(xaxis = list(title = "US States"),
+  yaxis = list(title = "Population"))
+```
+
+## Plotly Graph - State vs Air Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ state_name,
+  y =  ~ air_data,
+  type = "bar"
+  ) %>% layout(xaxis = list(title = "US States"),
+  yaxis = list(title = "Air Pollutants"))
+```
+
+## Plotly Graph - State vs Water Pollutants Data
+```{r,warning=FALSE,message=FALSE}
+plot_ly(
+  summarized_data,
+  x =  ~ state_name,
+  y =  ~ water_data,
+  type = "bar"
+  ) %>% layout(xaxis = list(title = "US States"),
+  yaxis = list(title = "Water Pollutants"))
+```
+
